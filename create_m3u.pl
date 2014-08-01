@@ -3,6 +3,7 @@
 
 use warnings;
 use strict;
+use File::Find::Rule;
 
 # Directory to start working in.
 my $TOPDIR;
@@ -35,9 +36,19 @@ sub usage {
     print "\t<directory>    The directory containing your music files.\n";
 }
 
+# Find all directories within our $TOPDIR
+# ARGS String directory
+# returns array of subdirs
+sub findSubDirs {
+    my $TOPDIR = shift;
+    my @subdirs = File::Find::Rule
+        ->directory()
+        ->in("$TOPDIR");
+    return @subdirs;
+}
+
 =start comment
 use Cwd;
-use File::Find::Rule;
 
 # Current working directory.
 my $cwd = cwd();
