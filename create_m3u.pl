@@ -4,6 +4,38 @@
 use warnings;
 use strict;
 
+# Directory to start working in.
+my $TOPDIR;
+
+# Check for proper arguments (directory)
+sub getArgs {
+    # Do we have an argument?
+    if (! $ARGV[0]) {
+        return 0;
+    }
+
+    # Save the Argument
+    $TOPDIR = $ARGV[0];
+    # Does it exist and is it a directory?
+    if (-e $TOPDIR && -d $TOPDIR) {
+        return 1;
+    }
+
+    # I guess not.
+    print "ERROR: $TOPDIR doesn't exist or isn't a directory!\n";
+    return 0;
+}
+
+# Usage message.
+sub usage {
+    print " $0 will recursively trawl through a directory, making\n";
+    print " playlist (m3u) files for every directory containing music.\n";
+    print "\n";
+    print "\tUsage: $0 <directory>\n";
+    print "\t<directory>    The directory containing your music files.\n";
+}
+
+=start comment
 use Cwd;
 use File::Find::Rule;
 
@@ -39,3 +71,19 @@ if (@sorted_files) {
     # close the m3u file
     close FILE;
 }
+
+=end comment
+=cut
+
+sub main {
+
+    if (! &getArgs()) {
+        &usage();
+        return 0;
+    }
+
+
+    return 1;
+}
+
+&main();
