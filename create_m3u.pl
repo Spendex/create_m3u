@@ -70,17 +70,15 @@ sub isExistingM3U {
 # Returns array of sorted music files.
 sub findMusic {
     my $dir = shift;
-
     # find music files in current directory
     my @files = File::Find::Rule
         ->file()
         ->name(qr/\.(mp3|ogg|flac)$/) 
         ->maxdepth("1")
         ->in("$dir");
-
     # sort the music files we found.
     my @sorted_files = sort @files;
-
+    # If we didn't find any, return 0
     if (!length(@sorted_files)) {
             return 0;
     }
@@ -91,6 +89,8 @@ sub findMusic {
 # ARGS string directory
 sub createPlaylists {
     my $TOPDIR = shift;
+
+    # find subdirs of $TOPDIR
     my @dirs = findSubDirs($TOPDIR);
 
     # let's go through each directory
