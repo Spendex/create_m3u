@@ -29,11 +29,11 @@ sub getArgs {
 
 # Usage message.
 sub usage {
-    print " $0 will recursively trawl through a directory, making\n";
-    print " playlist (m3u) files for every directory containing music.\n";
+    print "$0 will recursively trawl through a directory, making\n";
+    print "playlist (m3u) files for every directory containing music.\n";
     print "\n";
-    print "\tUsage: $0 <directory>\n";
-    print "\t<directory>    The directory containing your music files.\n";
+    print "Usage: $0 <directory>\n";
+    print "\tdirectory    The directory containing your music files.\n";
 }
 
 # Find all directories within our $TOPDIR
@@ -44,11 +44,15 @@ sub findSubDirs {
     my @subdirs = File::Find::Rule
         ->directory()
         ->in("$TOPDIR");
+    if (!length(@subdirs)) {
+            return 0;
+    }
     return @subdirs;
 }
 
 # Find out if there is an existing playlist file in given directory.
 # ARGS String directory
+# returns 1 if m3u was found, 0 if it was not.
 sub isExistingM3U {
     my $dir = shift;
     if (File::Find::Rule
@@ -61,7 +65,29 @@ sub isExistingM3U {
     return 0;
 }
 
-# Find all music files and actually create the playlist file.
+# Find out which music files there are in a directory.
+# ARGS String directory
+# Returns array of sorted music files.
+sub findMusic {
+    my $dir = shift;
+
+    # find music files in current directory
+    my @files = File::Find::Rule
+        ->file()
+        ->name(qr/\.(mp3|ogg|flac)$/) 
+        ->maxdepth("1")
+        ->in("$dir");
+
+    # sort the music files we found.
+    my @sorted_files = sort @files;
+
+    if (!length(@sorted_files)) {
+            return 0;
+    }
+    return @sorted_files;
+}
+
+# Actually create the playlist file.
 # ARGS string directory
 sub createPlaylists {
     my $TOPDIR = shift;
@@ -76,61 +102,47 @@ sub createPlaylists {
         }
 
         # Relative working directory.
-        #my $rel_wd = (split /\//, $cwd)[-1];
+        my $rel_wd = (split /\//, $cwd)[-1];
+        
+        # m3u file location with name of directory as m3u file name.
+        my $m3u = $cwd . "/" . $rel_wd . ".m3u";
+
+        # find the music files.
+        my @files = &findMusic($cwd);
+
+        # if there are music files.
+        if (@files) {
+            # open the m3u file for writing
+            unless (open (FILE, ">", $m3u)) {
+                print "ERROR: Could not open file $m3u"; 
+                next;
+            }
+
+            # go through each music file
+            foreach my $file (@files){
+                # print its name into the m3u file
+                print FILE "$file\n";
+            }
+
+            # close the m3u file
+            close FILE;
+            
+            # success
+            print "Created $m3u\n";
+        }
 
     }
 }
-
-=start comment
-use Cwd;
-
-# Current working directory.
-my $cwd = cwd();
-
-# Relative working directory.
-my $rel_wd = (split /\//, $cwd)[-1];
-
-# m3u file location with name of directory as m3u file name.
-my $m3u = $cwd . "/" . $rel_wd . ".m3u";
-
-# find music files in current directory
-my @files = File::Find::Rule
-    ->file()
-    ->name(qr/\.(mp3|ogg|flac)$/) 
-    ->maxdepth("1")
-    ->in(".");
-
-# sort the music files we found.
-my @sorted_files = sort @files;
-
-# if we have sorted file
-if (@sorted_files) {
-    # open the m3u file for writing
-    # TODO return, don't die.
-    open (FILE, ">", $m3u) || die "Could not open file $m3u"; 
-    # go through each music file
-    foreach my $file (@sorted_files){
-        # print its name into the m3u file
-        print FILE "$file\n";
-    }
-    # close the m3u file
-    close FILE;
-}
-
-=end comment
-=cut
 
 sub main {
-
+    # get and test args
     if (! &getArgs()) {
         &usage();
         return 0;
     }
 
-    # DEBUG CODE
+    # the meat and potatoes
     &createPlaylists($TOPDIR);
-
-    return 1;
 }
 
-&main();
+exit(&main() ? 0 : 1);
