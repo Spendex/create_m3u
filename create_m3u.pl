@@ -47,6 +47,40 @@ sub findSubDirs {
     return @subdirs;
 }
 
+# Find out if there is an existing playlist file in given directory.
+# ARGS String directory
+sub isExistingM3U {
+    my $dir = shift;
+    if (File::Find::Rule
+        ->file()
+        ->name(qr/\.m3u$/) 
+        ->maxdepth("1")
+        ->in("$dir")) {
+        return 1;
+    }
+    return 0;
+}
+
+# Find all music files and actually create the playlist file.
+# ARGS string directory
+sub createPlaylists {
+    my $TOPDIR = shift;
+    my @dirs = findSubDirs($TOPDIR);
+
+    # let's go through each directory
+    foreach my $cwd (@dirs) {
+
+        # If there is an m3u file alread, NEXT!
+        if (&isExistingM3U($cwd)) {
+            next;
+        }
+
+        # Relative working directory.
+        #my $rel_wd = (split /\//, $cwd)[-1];
+
+    }
+}
+
 =start comment
 use Cwd;
 
@@ -93,6 +127,8 @@ sub main {
         return 0;
     }
 
+    # DEBUG CODE
+    &createPlaylists($TOPDIR);
 
     return 1;
 }
