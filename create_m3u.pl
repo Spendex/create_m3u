@@ -120,8 +120,11 @@ sub createPlaylists {
 
             # go through each music file
             foreach my $file (@files){
+                # We only want the relative path.
+                my $rel_file = (split /\//, $file)[-1];
+
                 # print its name into the m3u file
-                print FILE "$file\n";
+                print FILE "$rel_file\n";
             }
 
             # close the m3u file
