@@ -73,7 +73,7 @@ sub findMusic {
     # find music files in current directory
     my @files = File::Find::Rule
         ->file()
-        ->name(qr/\.(mp3|ogg|flac)$/) 
+        ->name(qr/\.(mp3|ogg|flac|m4a|wma)$/) 
         ->maxdepth("1")
         ->in("$dir");
     # sort the music files we found.
